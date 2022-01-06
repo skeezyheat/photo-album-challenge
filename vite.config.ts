@@ -12,5 +12,6 @@ export default defineConfig({
       { find: 'layout', replacement: '/src/layout' },
       { find: 'store', replacement: '/src/store' },
     ]
-  }
+  },
+  base: '/photo-album-challenge/'
 })
