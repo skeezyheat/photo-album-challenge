@@ -1,45 +1,102 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { FC, useState, useEffect } from 'react'
+import shallow from 'zustand/shallow'
+import styled from 'styled-components'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { UI } from 'layout'
+import { Loader } from 'components'
+import { getAlbums, getPhotosForAlbum } from 'api'
+import { useStore } from 'store'
+
+const Wrapper = styled.div`
+  position: relative;
+  max-height: 100vh;
+  height: 100%;
+  width: 100%;
+`
+
+export const App: FC = () => {
+  const [
+    loading,
+    setLoading,
+    albums,
+    setAlbums,
+    selectedAlbum,
+    setSelectedAlbum,
+    setPhotos,
+  ] = useStore(
+    (state) => [
+      state.loading,
+      state.setLoading,
+      state.albums,
+      state.setAlbums,
+      state.selectedAlbum,
+      state.setSelectedAlbum,
+      state.setPhotos,
+    ],
+    shallow
+  )
+
+  const fetchAlbums = async () => {
+    try {
+      const fetchedAlbums = await getAlbums()
+      setSelectedAlbum(fetchedAlbums[0].id)
+      const albums = fetchedAlbums.map((album) => ({
+        ...album,
+        photos: [],
+      }))
+      setAlbums(albums)
+    } catch {
+      console.log('Failed to fetch initial data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchPhotos = async () => {
+    setLoading(true)
+    try {
+      const photos = await getPhotosForAlbum(selectedAlbum)
+      const newAlbums = albums.map((album) => {
+        if (album.id === selectedAlbum) {
+          return {
+            ...album,
+            photos,
+          }
+        }
+        return album
+      })
+      setAlbums(newAlbums)
+      setPhotos(photos)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAlbums()
+  }, [])
+
+  useEffect(() => {
+    if (albums.length > 0) {
+      if (
+        albums[selectedAlbum - 1].photos &&
+        albums[selectedAlbum - 1].photos.length === 0
+      ) {
+        fetchPhotos()
+      } else {
+        setPhotos(albums[selectedAlbum - 1].photos)
+      }
+    }
+  }, [selectedAlbum, albums])
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
+    <>
+      <Wrapper>
+        {loading && <Loader />}
+        <UI />
+      </Wrapper>
+    </>
   )
 }
-
-export default App
