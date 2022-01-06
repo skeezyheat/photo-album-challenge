@@ -76,6 +76,7 @@ const Subtitle = styled.h3`
 `
 export const Modal: FC = () => {
   const modal = useStore((state) => state.modal)
+  const albums = useStore((state) => state.albums)
   const setModal = useStore((state) => state.setModal)
   const removePhotoFromAlbum = useStore((state) => state.removePhoto)
   const movePhoto = useStore((state) => state.movePhoto)
@@ -99,7 +100,8 @@ export const Modal: FC = () => {
       if (
         !Number.isNaN(newAlbumId) &&
         newAlbumId !== albumId &&
-        newAlbumId > 0
+        newAlbumId > 0 &&
+        newAlbumId <= albums.length
       ) {
         movePhoto(id, newAlbumId)
         handleClose()
