@@ -51,6 +51,10 @@ export const useStore = create<State>(set => ({
         return album
       })
       console.log(`Photo with id ${id} removed form album ${state.selectedAlbum}`)
+      console.log('New state', {
+        photos: photos,
+        album: albums[state.selectedAlbum - 1]
+      })
       return { photos, albums }
     })
   },
@@ -88,6 +92,11 @@ export const useStore = create<State>(set => ({
       })
       console.log(`Photo with id ${id} moved from ${state.selectedAlbum} to album ${newAlbumId}`)
       console.log(`Check the photo at the end of the album ${newAlbumId}`)
+      console.log('New state', {
+        currentAlbum: albums[state.selectedAlbum - 1],
+        photos: photos,
+        newAlbum: albums[newAlbumId - 1]
+      })
       return { photos, albums }
     })
   }
