@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 import { Button } from './Button'
@@ -15,6 +15,7 @@ const Backdrop = styled.div`
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   animation: fadeIn 0.2s ease-in-out;
+  z-index: 10;
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -27,7 +28,7 @@ const Backdrop = styled.div`
 
 const ModalContainer = styled.div`
   position: relative;
-  z-index: 10;
+  z-index: 20;
   background-color: #fff;
   height: 90vh;
   width: 90vw;
@@ -78,6 +79,7 @@ export const Modal: FC = () => {
   const setModal = useStore((state) => state.setModal)
   const removePhotoFromAlbum = useStore((state) => state.removePhoto)
   const movePhoto = useStore((state) => state.movePhoto)
+  const innerRef = useRef<HTMLDivElement | null>(null)
 
   const handleClose = () => {
     setModal(null)
@@ -91,7 +93,9 @@ export const Modal: FC = () => {
   const handleMovePhoto = (id: number, albumId: number) => {
     const newId = window.prompt('Enter the album number to move the photo to')
     if (newId) {
+      // Change the string to a number
       const newAlbumId = parseInt(newId, 10)
+      // If it's a valid number && it's not the same album, move the photo
       if (
         !Number.isNaN(newAlbumId) &&
         newAlbumId !== albumId &&
@@ -99,15 +103,49 @@ export const Modal: FC = () => {
       ) {
         movePhoto(id, newAlbumId)
         handleClose()
-      } else {
+      }
+      // If it's not a valid number, alert the user
+      else {
         return window.alert('Please enter a valid album number.')
       }
     }
   }
 
+  // Escape key closes modal
+  useEffect(() => {
+    const keydownHandler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose()
+      }
+    }
+    window.addEventListener('keydown', keydownHandler)
+    return () => {
+      window.removeEventListener('keydown', keydownHandler)
+    }
+  }, [])
+
+  // Add click outside event handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        innerRef.current &&
+        !innerRef.current.contains(event.target as Node)
+      ) {
+        handleClose()
+      }
+    }
+
+    if (innerRef.current) {
+      document.addEventListener('click', handleClickOutside, true)
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside, true)
+    }
+  }, [innerRef])
+
   return (
     <Backdrop>
-      <ModalContainer>
+      <ModalContainer ref={innerRef}>
         <CloseButton onClick={handleClose}>X</CloseButton>
         <Image src={modal?.photo.url} />
         <Title>{modal?.photo.title}</Title>

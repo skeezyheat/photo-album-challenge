@@ -45,7 +45,8 @@ export const App: FC = () => {
         photos: [],
       }))
       setAlbums(albums)
-    } catch {
+    } catch (error) {
+      console.log(error)
       console.log('Failed to fetch initial data')
     } finally {
       setLoading(false)
@@ -69,6 +70,7 @@ export const App: FC = () => {
       setPhotos(photos)
     } catch (error) {
       console.log(error)
+      console.log('Failed to fetch photo set')
     } finally {
       setLoading(false)
     }

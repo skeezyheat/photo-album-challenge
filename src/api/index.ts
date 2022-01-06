@@ -14,7 +14,6 @@ export const getAlbums = async (): Promise<Album[]> => {
 
 export const getPhotosForAlbum = async (albumId: number): Promise<Photo[]> => {
   try {
-    console.log(albumId)
     const res = await fetch(`https://jsonplaceholder.typicode.com/albums/${albumId}/photos`)
     if (!res.ok) {
       throw new Error(`Something went wrong while fetching photos for album ${albumId}`)
